@@ -2,6 +2,8 @@ package com.ecopes.stock.payload;
 
 import javax.validation.constraints.*;
 
+import com.ecopes.stock.model.RoleName;
+
 public class SignUpRequest {
 	@NotBlank
 	@Size(min = 4, max = 40)
@@ -19,6 +21,9 @@ public class SignUpRequest {
 	@NotBlank
 	@Size(min = 6, max = 20)
 	private String password;
+
+	@NotNull
+	private RoleName roleName;
 
 	public String getName() {
 		return name;
@@ -51,4 +56,13 @@ public class SignUpRequest {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public RoleName getRoleName() {
+		return roleName;
+	}
+
+	public void setRoleName(RoleName roleName) {
+		this.roleName = roleName;
+	}
+
 }

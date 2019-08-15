@@ -63,7 +63,7 @@ public class AuthController {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -79,8 +79,11 @@ public class AuthController {
 				signUpRequest.getPassword());
 
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-		Role userRole = roleRepository.findByName(RoleName.ROLE_USER)
+		if (signUpRequest.getRoleName() == RoleName.ROLE_SUPER_ADMIN) {
+			return new ResponseEntity(new ApiResponse(false, "You cannot assign a SUPER ADMIN ROLE!	"),
+					HttpStatus.BAD_REQUEST);
+		}
+		Role userRole = roleRepository.findByName(signUpRequest.getRoleName())
 				.orElseThrow(() -> new AppException("User Role not set."));
 
 		user.setRoles(Collections.singleton(userRole));
