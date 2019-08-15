@@ -1,4 +1,4 @@
-.mvn
-.settings
+.mvn/*
+.settings/*
 src/main/resources/*
 target
