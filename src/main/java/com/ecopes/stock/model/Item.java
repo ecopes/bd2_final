@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import org.hibernate.annotations.Formula;
 
 @Entity
 @Table(name = "item")
@@ -22,8 +23,12 @@ public class Item extends DateAudit implements Serializable {
 	@NotBlank
 	private String description;
 
-	@NotNull
-	private Double amount;
+	@Formula("(select coalesce(sum(s.actual_amount),0) from Stock s where s.item_id = id and s.actual_amount > 0)")
+	private Double totalAmount;
+
+	public Item() {
+
+	}
 
 	public Long getId() {
 		return id;
@@ -41,12 +46,8 @@ public class Item extends DateAudit implements Serializable {
 		this.description = description;
 	}
 
-	public Double getAmount() {
-		return amount;
-	}
-
-	public void setAmount(Double amount) {
-		this.amount = amount;
+	public Double getTotalAmount() {
+		return totalAmount;
 	}
 
 }
