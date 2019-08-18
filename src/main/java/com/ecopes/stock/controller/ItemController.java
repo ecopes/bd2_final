@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
+
 import com.ecopes.stock.exception.ResourceNotFoundException;
 import com.ecopes.stock.exception.SubtractException;
 import com.ecopes.stock.model.History;
@@ -26,6 +29,7 @@ import com.ecopes.stock.model.Stock;
 import com.ecopes.stock.model.User;
 import com.ecopes.stock.payload.StockAddRequest;
 import com.ecopes.stock.payload.StockSubtractRequest;
+import com.ecopes.stock.payload.StockSubtractResponse;
 import com.ecopes.stock.repository.HistoryRepository;
 import com.ecopes.stock.repository.ItemRepository;
 import com.ecopes.stock.repository.StockRepository;
@@ -34,6 +38,17 @@ import com.ecopes.stock.repository.UserRepository;
 @RestController
 @RequestMapping("/api/item")
 public class ItemController {
+
+	@Bean
+	public CommonsRequestLoggingFilter requestLoggingFilter() {
+		CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+		loggingFilter.setIncludeClientInfo(true);
+		loggingFilter.setIncludeQueryString(true);
+		loggingFilter.setIncludePayload(true);
+		loggingFilter.setIncludeHeaders(true);
+		loggingFilter.setAfterMessagePrefix("REQUEST DATA : \n");
+		return loggingFilter;
+	}
 
 	@Autowired
 	ItemRepository itemRepository;
@@ -109,7 +124,7 @@ public class ItemController {
 
 	@PostMapping("/subtractStock")
 	@Transactional
-	public Item subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
+	public StockSubtractResponse subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
 		Item item = itemRepository.findById(stockDetails.getItemId())
 				.orElseThrow(() -> new ResourceNotFoundException("Item", "id", stockDetails.getItemId()));
 		User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
@@ -118,6 +133,7 @@ public class ItemController {
 		List<Stock> stockList = stockRepository.findForSubtract(item);
 		Double toSubtract = stockDetails.getAmount();
 		List<History> historyList = new ArrayList<History>();
+		List<Stock> stockListResponse = new ArrayList<Stock>();
 		for (Stock stock : stockList) {
 			if (stock.getActualAmount() >= toSubtract) {
 				historyList.add(new History(user, stock, toSubtract * -1));
@@ -129,6 +145,7 @@ public class ItemController {
 				stock.setActualAmount(0.0);
 			}
 			stockRepository.save(stock);
+			stockListResponse.add(stock);
 			if (toSubtract == 0.0) {
 				break;
 			}
@@ -140,6 +157,7 @@ public class ItemController {
 		historyRepository.saveAll(historyList);
 		entityManager.flush();
 		entityManager.refresh(item);
-		return item;
+		return new StockSubtractResponse(item, stockListResponse);
 	}
+
 }
