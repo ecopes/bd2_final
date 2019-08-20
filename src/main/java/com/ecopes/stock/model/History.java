@@ -11,6 +11,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "history")
 public class History extends DateAudit implements Serializable {
@@ -22,7 +24,8 @@ public class History extends DateAudit implements Serializable {
 	private Long id;
 
 	@NotNull
-	@OneToOne(fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 

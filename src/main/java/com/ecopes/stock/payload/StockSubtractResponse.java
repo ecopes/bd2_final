@@ -1,18 +1,19 @@
 package com.ecopes.stock.payload;
 
 import java.util.List;
+
+import com.ecopes.stock.model.History;
 import com.ecopes.stock.model.Item;
-import com.ecopes.stock.model.Stock;
 
 public class StockSubtractResponse {
 
 	public Item item;
-	public List<Stock> stockList;
+	public List<History> historyList;
 
-	public StockSubtractResponse(Item item, List<Stock> stockList) {
+	public StockSubtractResponse(Item item, List<History> historyList) {
 		super();
 		this.item = item;
-		this.stockList = stockList;
+		this.historyList = historyList;
 	}
 
 	public Item getItem() {
@@ -23,11 +24,12 @@ public class StockSubtractResponse {
 		this.item = item;
 	}
 
-	public List<Stock> getStockList() {
-		return stockList;
+	public List<History> getHistoryList() {
+		return historyList;
 	}
 
-	public void setStockList(List<Stock> stockList) {
-		this.stockList = stockList;
+	public void setHistoryList(List<History> historyList) {
+		this.historyList = historyList;
 	}
+
 }

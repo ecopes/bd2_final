@@ -157,7 +157,7 @@ public class ItemController {
 		historyRepository.saveAll(historyList);
 		entityManager.flush();
 		entityManager.refresh(item);
-		return new StockSubtractResponse(item, stockListResponse);
+		return new StockSubtractResponse(item, historyList);
 	}
 
 }
