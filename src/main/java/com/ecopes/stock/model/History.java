@@ -11,6 +11,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -31,6 +34,7 @@ public class History extends DateAudit implements Serializable {
 
 	@NotNull
 	@OneToOne(fetch = FetchType.EAGER)
+	@Cascade(CascadeType.DELETE)
 	@JoinColumn(name = "stock_id")
 	private Stock stock;
 

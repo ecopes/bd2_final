@@ -13,6 +13,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 @Entity
 @Table(name = "stock")
 public class Stock extends DateAudit implements Serializable {
@@ -30,6 +33,7 @@ public class Stock extends DateAudit implements Serializable {
 	private Double actualAmount;
 
 	@NotNull
+	@Cascade(CascadeType.DELETE)
 	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "item_id")
 	private Item item;

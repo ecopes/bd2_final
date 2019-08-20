@@ -94,7 +94,7 @@ public class ItemController {
 		return updatedItem;
 	}
 
-	@PreAuthorize("hasRole('ROLE_ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_SUPER_ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteItem(@PathVariable(value = "id") Long itemId) {
 		Item item = itemRepository.findById(itemId)
