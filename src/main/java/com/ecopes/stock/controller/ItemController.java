@@ -29,7 +29,6 @@ import com.ecopes.stock.model.Stock;
 import com.ecopes.stock.model.User;
 import com.ecopes.stock.payload.StockAddRequest;
 import com.ecopes.stock.payload.StockSubtractRequest;
-import com.ecopes.stock.payload.StockSubtractResponse;
 import com.ecopes.stock.repository.HistoryRepository;
 import com.ecopes.stock.repository.ItemRepository;
 import com.ecopes.stock.repository.StockRepository;
@@ -124,7 +123,7 @@ public class ItemController {
 
 	@PostMapping("/subtractStock")
 	@Transactional
-	public StockSubtractResponse subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
+	public Item subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
 		Item item = itemRepository.findById(stockDetails.getItemId())
 				.orElseThrow(() -> new ResourceNotFoundException("Item", "id", stockDetails.getItemId()));
 		User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
@@ -133,7 +132,6 @@ public class ItemController {
 		List<Stock> stockList = stockRepository.findForSubtract(item);
 		Double toSubtract = stockDetails.getAmount();
 		List<History> historyList = new ArrayList<History>();
-		List<Stock> stockListResponse = new ArrayList<Stock>();
 		for (Stock stock : stockList) {
 			if (stock.getActualAmount() >= toSubtract) {
 				historyList.add(new History(user, stock, toSubtract * -1));
@@ -145,7 +143,6 @@ public class ItemController {
 				stock.setActualAmount(0.0);
 			}
 			stockRepository.save(stock);
-			stockListResponse.add(stock);
 			if (toSubtract == 0.0) {
 				break;
 			}
@@ -157,7 +154,7 @@ public class ItemController {
 		historyRepository.saveAll(historyList);
 		entityManager.flush();
 		entityManager.refresh(item);
-		return new StockSubtractResponse(item, historyList);
+		return item;
 	}
 
 }

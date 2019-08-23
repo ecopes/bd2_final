@@ -1,12 +1,15 @@
 package com.ecopes.stock.model;
 
 import java.io.Serializable;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -28,17 +31,20 @@ public class History extends DateAudit implements Serializable {
 
 	@NotNull
 	@JsonIgnore
+	@Cascade(CascadeType.DETACH)
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private User user;
 
 	@NotNull
-	@OneToOne(fetch = FetchType.EAGER)
-	@Cascade(CascadeType.DELETE)
+	@ManyToOne(fetch = FetchType.EAGER)
+	@Cascade(CascadeType.ALL)
 	@JoinColumn(name = "stock_id")
+	@JsonIgnore
 	private Stock stock;
 
 	@NotNull
+	@Column(scale=2)
 	private Double amount;
 
 	public History(@NotNull User user, @NotNull Stock stock, @NotNull Double amount) {

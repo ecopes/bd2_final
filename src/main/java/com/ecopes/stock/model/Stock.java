@@ -2,19 +2,25 @@ package com.ecopes.stock.model;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "stock")
@@ -27,21 +33,29 @@ public class Stock extends DateAudit implements Serializable {
 	private Long id;
 
 	@NotNull
+	@Column(scale=2)
 	private Double totalAmount;
 
 	@NotNull
+	@Column(scale=2)
 	private Double actualAmount;
 
 	@NotNull
-	@Cascade(CascadeType.DELETE)
-	@OneToOne(fetch = FetchType.EAGER)
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.EAGER)
+	@Cascade(CascadeType.ALL)
 	@JoinColumn(name = "item_id")
 	private Item item;
+	
+	@OneToMany(mappedBy = "stock")
+	@Cascade(CascadeType.ALL)
+	private List<History> history = new ArrayList<History>();
 
 	@NotNull
 	private Instant date;
 
 	@NotNull
+	@Column(scale=2)
 	private Double price;
 
 	public Stock(@NotNull Double totalAmount, @NotNull Double actualAmount, @NotNull Item item, @NotNull Instant date,
@@ -108,6 +122,14 @@ public class Stock extends DateAudit implements Serializable {
 
 	public void setPrice(Double price) {
 		this.price = price;
+	}
+
+	public List<History> getHistory() {
+		return history;
+	}
+
+	public void setHistory(List<History> history) {
+		this.history = history;
 	}
 
 }
