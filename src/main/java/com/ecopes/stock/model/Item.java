@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "item")
@@ -26,12 +27,13 @@ public class Item extends DateAudit implements Serializable {
 
 	@NotBlank
 	private String description;
-	
+
 	@Formula("(select coalesce(sum(s.actual_amount),0) from Stock s where s.item_id = id and s.actual_amount > 0)")
 	private Double totalAmount;
-	
+
 	@OneToMany(mappedBy = "item")
 	@Cascade(CascadeType.ALL)
+	@Where(clause = "actual_amount > 0")
 	private List<Stock> stock = new ArrayList<Stock>();
 
 	public Item() {
@@ -64,6 +66,14 @@ public class Item extends DateAudit implements Serializable {
 
 	public void setStock(List<Stock> stock) {
 		this.stock = stock;
+	}
+
+	public boolean addStock(Stock stock) {
+		return this.stock.add(stock);
+	}
+
+	public boolean removeStock(Stock stock) {
+		return this.stock.remove(stock);
 	}
 
 }

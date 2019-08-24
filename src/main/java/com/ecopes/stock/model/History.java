@@ -37,14 +37,14 @@ public class History extends DateAudit implements Serializable {
 	private User user;
 
 	@NotNull
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = javax.persistence.CascadeType.ALL)
 	@Cascade(CascadeType.ALL)
 	@JoinColumn(name = "stock_id")
 	@JsonIgnore
 	private Stock stock;
 
 	@NotNull
-	@Column(scale=2)
+	@Column(scale = 2)
 	private Double amount;
 
 	public History(@NotNull User user, @NotNull Stock stock, @NotNull Double amount) {

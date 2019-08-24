@@ -7,4 +7,5 @@ import com.ecopes.stock.model.History;
 
 @Repository
 public interface HistoryRepository extends JpaRepository<History, Long> {
+
 }

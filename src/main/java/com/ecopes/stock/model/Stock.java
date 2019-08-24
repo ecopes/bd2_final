@@ -33,20 +33,20 @@ public class Stock extends DateAudit implements Serializable {
 	private Long id;
 
 	@NotNull
-	@Column(scale=2)
+	@Column(scale = 2)
 	private Double totalAmount;
 
 	@NotNull
-	@Column(scale=2)
+	@Column(scale = 2)
 	private Double actualAmount;
 
 	@NotNull
 	@JsonIgnore
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.EAGER, cascade = javax.persistence.CascadeType.ALL)
 	@Cascade(CascadeType.ALL)
 	@JoinColumn(name = "item_id")
 	private Item item;
-	
+
 	@OneToMany(mappedBy = "stock")
 	@Cascade(CascadeType.ALL)
 	private List<History> history = new ArrayList<History>();
@@ -55,7 +55,7 @@ public class Stock extends DateAudit implements Serializable {
 	private Instant date;
 
 	@NotNull
-	@Column(scale=2)
+	@Column(scale = 2)
 	private Double price;
 
 	public Stock(@NotNull Double totalAmount, @NotNull Double actualAmount, @NotNull Item item, @NotNull Instant date,
@@ -130,6 +130,14 @@ public class Stock extends DateAudit implements Serializable {
 
 	public void setHistory(List<History> history) {
 		this.history = history;
+	}
+
+	public boolean addHistory(History history) {
+		return this.history.add(history);
+	}
+
+	public boolean removeHistory(History history) {
+		return this.history.remove(history);
 	}
 
 }

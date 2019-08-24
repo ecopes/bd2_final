@@ -23,7 +23,6 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import com.ecopes.stock.exception.ResourceNotFoundException;
 import com.ecopes.stock.exception.SubtractException;
-import com.ecopes.stock.model.History;
 import com.ecopes.stock.model.Item;
 import com.ecopes.stock.model.Stock;
 import com.ecopes.stock.model.User;
@@ -33,6 +32,7 @@ import com.ecopes.stock.repository.HistoryRepository;
 import com.ecopes.stock.repository.ItemRepository;
 import com.ecopes.stock.repository.StockRepository;
 import com.ecopes.stock.repository.UserRepository;
+import com.ecopes.stock.service.StockService;
 
 @RestController
 @RequestMapping("/api/item")
@@ -64,6 +64,9 @@ public class ItemController {
 	@PersistenceContext
 	private EntityManager entityManager;
 
+	@Autowired
+	StockService stockService;
+
 	@GetMapping("")
 	public List<Item> getAllItems() {
 		return itemRepository.findAll();
@@ -72,6 +75,13 @@ public class ItemController {
 	@GetMapping("/{id}")
 	public Item getItemById(@PathVariable(value = "id") Long itemId) {
 		return itemRepository.findById(itemId).orElseThrow(() -> new ResourceNotFoundException("Item", "id", itemId));
+	}
+
+	@GetMapping("/history/{id}")
+	public List<Stock> getHistoryByItemId(@PathVariable(value = "id") Long itemId) {
+		Item item = itemRepository.findById(itemId)
+				.orElseThrow(() -> new ResourceNotFoundException("Item", "id", itemId));
+		return stockRepository.findAllStock(item);
 	}
 
 	@PostMapping("")
@@ -112,49 +122,23 @@ public class ItemController {
 		User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
 				.get();
 
-		Stock stock = new Stock(stockDetails.getAmount(), stockDetails.getAmount(), item, stockDetails.getDate(),
-				stockDetails.getPrice());
-		History history = new History(user, stock, stockDetails.getAmount());
-		stockRepository.save(stock);
-		historyRepository.save(history);
-		entityManager.refresh(item);
-		return item;
+		return this.stockService.addStock(item, stockDetails.getAmount(), stockDetails.getDate(),
+				stockDetails.getPrice(), user);
 	}
 
 	@PostMapping("/subtractStock")
 	@Transactional
-	public Item subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
+	public ArrayList<Stock> subtractStock(@Valid @RequestBody StockSubtractRequest stockDetails) {
 		Item item = itemRepository.findById(stockDetails.getItemId())
 				.orElseThrow(() -> new ResourceNotFoundException("Item", "id", stockDetails.getItemId()));
 		User user = userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
 				.get();
 
-		List<Stock> stockList = stockRepository.findForSubtract(item);
-		Double toSubtract = stockDetails.getAmount();
-		List<History> historyList = new ArrayList<History>();
-		for (Stock stock : stockList) {
-			if (stock.getActualAmount() >= toSubtract) {
-				historyList.add(new History(user, stock, toSubtract * -1));
-				stock.setActualAmount(stock.getActualAmount() - toSubtract);
-				toSubtract = 0.0;
-			} else {
-				historyList.add(new History(user, stock, stock.getActualAmount() * -1));
-				toSubtract -= stock.getActualAmount();
-				stock.setActualAmount(0.0);
-			}
-			stockRepository.save(stock);
-			if (toSubtract == 0.0) {
-				break;
-			}
+		ArrayList<Stock> stocks = this.stockService.subtractStock(item, stockDetails.getAmount(), user);
+		if (stocks.size() > 0) {
+			return stocks;
 		}
-		if (toSubtract > 0) {
-			entityManager.clear();
-			throw new SubtractException("No hay suficiente Stock");
-		}
-		historyRepository.saveAll(historyList);
-		entityManager.flush();
-		entityManager.refresh(item);
-		return item;
+		throw new SubtractException("No hay suficiente Stock");
 	}
 
 }
